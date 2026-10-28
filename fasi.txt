@@ -1,0 +1,22 @@
+Fase	Contenuto	Stato
+1	Configurazione siti, database SQLite, lock anti-doppia-esecuzione, log. 	Screenshot desktop e mobile con confronto e immagini delle differenze. 	Controllo geometria/CSS (anche automatico). Baseline approvate a mano. 	Memoria dei falsi allarmi per pagina. Report HTML. Script per Utilità di 	pianificazione alle 09:00 e recupero	Fatta. Funziona sul tuo stage, con 	la correzione degli ID casuali da rifare e approvare di nuovo
+
+
+
+2	Test dei form: modalità safe (nessun invio), staging (endpoint di prova) e 	live-approved (invio reale solo se abilitato per quel singolo form). 	Controllo di campi, validazioni, messaggi di errore, richieste di rete ed 	errori JavaScript. Nessun aggiramento di CAPTCHA	
+	Da fare, è la 	prossima
+
+
+
+3	Analisi IA visiva solo sulle anomalie dubbie, con provider configurabile, 	limiti di costo e chiave nel .env. L’IA può proporre eccezioni, ma le 	approvi tu. Email giornaliera SMTP in HTML e testo, mail di prova e avvisi 	critici immediati	
+	Da fare
+
+
+
+4	Scansione facoltativa di pagine e sitemap con limiti e senza aree admin. 	Pannello web locale protetto per siti, storico, approvazioni e baseline	
+        Da fare
+
+
+C’è anche la verifica sui 5 siti pilota prima di estendere ai 100: persistenza delle eccezioni dopo il riavvio, nessuna eccezione che nasconda altri problemi, email che arrivano, memoria sotto controllo. La parte sul riavvio e sulle eccezioni puoi già provarla, mentre email e RAM su molti siti dipendono dalle fasi successive.
+
+Piccoli extra rimasti in sospeso, da inserire quando serve: hostMap, ignoreHttpsErrors, pausa tra le pagine e User-Agent dichiarato. Servono soprattutto prima di passare ai siti reali dell’azienda.
