@@ -45,6 +45,7 @@ async function runTask(browser: Browser, runId: number, t: Task, cfg: Config) {
   const visualCfg = { ...d.visual, ...(t.page.visual ?? {}) };
   const tol = t.page.geometryTolerancePx ?? d.geometryTolerancePx;
   const ctx = await browser.newContext({ viewport: { width: t.vp.width, height: t.vp.height }, locale: 'it-IT', timezoneId: 'Europe/Rome', serviceWorkers: 'block' });
+  await ctx.addInitScript('window.__name = (fn) => fn;');
   const page = await ctx.newPage();
   page.setDefaultTimeout(d.navTimeoutMs);
   const jsErrors: string[] = [];
@@ -121,6 +122,15 @@ async function runTask(browser: Browser, runId: number, t: Task, cfg: Config) {
   } finally { await ctx.close(); }
 }
 
+function pruneRuns(keep: number) {
+  if (!fs.existsSync(P.screenshots)) return;
+  const ids = fs.readdirSync(P.screenshots).filter((d) => /^\d+$/.test(d)).map(Number).sort((a, b) => b - a);
+  for (const id of ids.slice(keep)) {
+    fs.rmSync(path.join(P.screenshots, String(id)), { recursive: true, force: true });
+    fs.rmSync(path.join(P.reports, String(id)), { recursive: true, force: true });
+  }
+}
+
 export async function runScan(o: { trigger: Trigger; siteIds?: string[]; pilot?: boolean }): Promise<number | null> {
   const cfg = loadConfig();
   if (!acquireLock()) { log('WARN', 'Un\'altra scansione è già in corso: esco senza fare nulla.'); return null; }
@@ -152,7 +162,7 @@ export async function runScan(o: { trigger: Trigger; siteIds?: string[]; pilot?:
     finish(skipped ? 'partial' : 'completed', skipped ? `${skipped} controlli non eseguiti per limite di tempo` : undefined);
     const report = writeReport(runId);
     log('INFO', `Run ${runId} terminata. Report: ${report}`);
-    pruneOld(P.screenshots, cfg.run.retentionDays); pruneOld(P.reports, cfg.run.retentionDays); pruneOld(P.logs, 90);
+    pruneRuns(cfg.run.keepRuns ?? 2); pruneOld(P.logs, 90);
     return runId;
   } catch (e) {
     finish('aborted', (e as Error).message); log('ERROR', `Run ${runId} abortita: ${(e as Error).message}`); throw e;

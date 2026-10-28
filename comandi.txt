@@ -1,0 +1,253 @@
+COMANDI — monitor-100-siti
+==========================================================================
+Tutti i comandi vanno eseguiti in PowerShell, dentro la cartella del progetto
+(quella che contiene package.json). Esempio:
+    cd "C:\Users\Stage IT\Desktop\ProgettoMonitorWebPage\webPageMonitor"
+
+Nota sulla sintassi: dopo "npm run NOME" gli argomenti del programma vanno
+scritti dopo i due trattini "--". Esempio:  npm run scan -- --site stage-alex
+
+
+1) INSTALLAZIONE E VERIFICA
+--------------------------------------------------------------------------
+npm install
+    Installa le dipendenze del progetto (solo la prima volta o dopo aver
+    cambiato package.json).
+
+npm run install:browser
+    Scarica Chromium per Playwright (solo la prima volta).
+
+npm run check
+    Controlla Node (>= 20), validità di sites.json, apertura del database
+    SQLite e presenza di Chromium. Ogni riga deve dire OK.
+
+npm run typecheck        (equivale a: npx tsc --noEmit)
+    Controlla il codice TypeScript senza eseguirlo. Nessun output = nessun
+    errore. Da usare dopo aver modificato i file in src\.
+
+npm run test:unit
+    Esegue i test automatici (URL, eccezioni, geometria, joinUrl).
+    Tutti devono risultare "pass".
+
+
+2) ELENCO SITI
+--------------------------------------------------------------------------
+npm run sites
+    Mostra quanti siti e quanti controlli (pagina x viewport) verranno
+    eseguiti, con tabella id / enabled / pilot / numero pagine.
+
+npm run sites -- --pilot
+    Come sopra, ma solo per i siti con "pilot": true.
+
+
+3) SCANSIONE
+--------------------------------------------------------------------------
+npm run scan
+    Scansione manuale di tutti i siti con "enabled" diverso da false.
+
+npm run scan:pilot
+    Scansione manuale dei soli siti con "pilot": true.
+
+npm run scan -- --site stage-alex
+    Scansione di un solo sito (id come in sites.json).
+
+npm run scan -- --site sito-uno,sito-due
+    Scansione di più siti (id separati da virgola, senza spazi).
+
+npm run scan -- --pilot
+    Equivalente di scan:pilot.
+
+npm run scan -- --scheduled
+    Come scan, ma la run viene registrata come "scheduled" (usata
+    dall'attivita' delle 09:00). Conta come scansione giornaliera.
+
+npm run scan -- --if-missed
+    Parte solo se oggi (ora di Roma), dopo le 09:00, non esiste ancora una
+    run "scheduled" o "catchup" completata. Altrimenti scrive
+    "Nessun recupero necessario" ed esce. Usata dall'attivita' di recupero.
+
+Se un'altra scansione e' gia' in corso, il comando esce senza fare nulla
+(protezione anti-doppia-esecuzione). Se il lock resta bloccato dopo un
+crash e nessuna scansione e' attiva, cancella il file data\scan.lock.
+
+
+4) BASELINE (immagini e geometria di riferimento)
+--------------------------------------------------------------------------
+Le baseline non vengono mai aggiornate in automatico. Si approvano solo
+con questo comando, dopo aver controllato gli screenshot della run.
+
+npm run baseline -- approve --site stage-alex --yes
+    Approva come baseline gli screenshot e gli snapshot geometrici
+    dell'ULTIMA run completata, per tutte le pagine del sito.
+
+npm run baseline -- approve --site stage-alex --page how-it-works --yes
+    Approva solo la pagina indicata (nome come in sites.json).
+
+npm run baseline -- approve --site stage-alex --run 2 --yes
+    Approva da una run specifica invece che dall'ultima.
+    (la run deve esistere ancora in screenshots\: ne restano solo le
+    ultime "keepRuns")
+
+Senza --yes il comando rifiuta di procedere.
+
+
+5) ECCEZIONI (falsi allarmi memorizzati per singola pagina)
+--------------------------------------------------------------------------
+npm run exceptions -- add --site ID --url URL --selector "SEL" --kind TIPO --reason "MOTIVO" [--viewport desktop|mobile] [--threshold 0.03]
+    Salva un'eccezione. Vale solo per quel sito + URL normalizzato +
+    viewport (se omesso: tutti i viewport di quella pagina).
+    Parametri:
+      --site       id del sito (obbligatorio)
+      --url        URL completo della pagina (obbligatorio)
+      --kind       text-change | visual-region | visual-threshold
+      --reason     motivazione (obbligatoria)
+      --selector   obbligatorio per text-change e visual-region
+      --viewport   opzionale
+      --threshold  solo per visual-threshold: rapporto massimo di pixel
+                   diversi autorizzato (tra 0 e 1, es. 0.03 = 3%)
+    Tipi:
+      text-change      ignora SOLO il cambio di testo di quell'elemento;
+                       elemento mancante, nascosto, spostato o ridimensionato
+                       resta segnalato
+      visual-region    maschera quell'area negli screenshot futuri
+                       (poi riapprova la baseline di quella pagina)
+      visual-threshold soglia di differenza visiva autorizzata per quella
+                       pagina
+
+    Esempio:
+    npm run exceptions -- add --site stage-alex --url http://192.168.0.252/test/stage_alex/ --viewport desktop --selector "body > main:nth-of-type(1) > h1:nth-of-type(1)" --kind text-change --reason "titolo dinamico"
+
+npm run exceptions -- list
+    Elenca le eccezioni attive.
+
+npm run exceptions -- list --all
+    Elenca anche quelle revocate.
+
+npm run exceptions -- revoke 1 --note "non piu' valida"
+    Revoca l'eccezione con id 1 (l'id si vede con "list"). --note e'
+    facoltativo.
+
+npm run exceptions -- history
+    Mostra lo storico delle decisioni (creazioni e revoche).
+
+
+6) REPORT
+--------------------------------------------------------------------------
+npm run report
+    Rigenera il report HTML dell'ultima run e stampa il percorso.
+
+npm run report -- --run 2
+    Rigenera il report di una run specifica.
+
+start reports\2\index.html
+    Apre il report della run 2 nel browser (sostituisci 2 col numero
+    della run). Non spostare index.html fuori dalla cartella reports:
+    le immagini sono collegate con percorsi relativi.
+
+
+7) DOVE SI TROVANO I FILE (tutti dentro la cartella del progetto)
+--------------------------------------------------------------------------
+screenshots\<run>\<id-sito>\<pagina>\desktop.png   screenshot della run
+screenshots\<run>\<id-sito>\<pagina>\desktop.diff.png   differenze
+screenshots\<run>\<id-sito>\<pagina>\desktop.geometry.json   snapshot elementi
+baselines\<id-sito>\<pagina>\                      baseline approvate
+reports\<run>\index.html                           report della run
+logs\AAAA-MM-GG.log                                log giornalieri
+data\monitor.db                                    database (risultati, eccezioni)
+data\scan.lock                                     lock scansione in corso
+
+Comandi utili:
+    explorer screenshots\2\stage-alex       apre la cartella degli screenshot
+    Get-Content logs\2026-10-28.log -Tail 50    ultime 50 righe del log del giorno
+    Get-Content .\logs\*.log -Wait          segue il log in tempo reale
+
+
+8) STATI DEI RISULTATI (come leggere il report)
+--------------------------------------------------------------------------
+Superato          controllo eseguito e senza problemi
+Fallito           controllo eseguito, problema rilevato
+Non verificabile  manca la baseline approvata: confronto impossibile
+Non eseguito      il controllo non e' stato eseguito (pagina non raggiunta,
+                  nessun elemento configurato, tempo massimo esaurito)
+"Non verificabile" e "non eseguito" non sono mai contati come superati.
+
+
+9) AVVIO AUTOMATICO GIORNALIERO ALLE 09:00 (Utilita' di pianificazione)
+--------------------------------------------------------------------------
+Requisiti:
+  - PC acceso, utente loggato (anche con schermo bloccato) e sulla rete
+    che raggiunge i siti (LAN/VPN per il server 192.168.0.252).
+  - Fuso orario di Windows = "W. Europe Standard Time" (Roma). L'Utilita' di
+    pianificazione usa l'ora locale del PC: con questo fuso le 09:00 sono
+    quelle italiane e il cambio ora solare/legale e' automatico.
+    Verifica con:   Get-TimeZone
+    Per impostarlo: Set-TimeZone -Id "W. Europe Standard Time"   (admin)
+  - npm e Node nel PATH dell'utente (verifica con: node -v  e  npm -v).
+
+Passo 1 - Registrare le attivita'
+  Apri PowerShell nella cartella del progetto ed esegui:
+      powershell -ExecutionPolicy Bypass -File scripts\register-tasks.ps1
+  Vengono create due attivita':
+    Monitor100Siti-0900      ogni giorno alle 09:00, con "avvia appena
+                             possibile se l'orario e' stato perso"
+                             (se il PC era spento alle 09:00, parte
+                             appena possibile)
+    Monitor100Siti-Recupero  all'accesso dell'utente: esegue
+                             "scan --if-missed", quindi parte solo se oggi
+                             dopo le 09:00 non esiste ancora una run
+                             completata
+  Impostazioni comuni: una sola istanza alla volta, limite 3 ore,
+  fino a 2 ripartenze a distanza di 10 minuti in caso di errore.
+
+Passo 2 - Verificare
+      Get-ScheduledTask Monitor100Siti*
+      Get-ScheduledTaskInfo -TaskName Monitor100Siti-0900
+  (mostra ultima esecuzione, prossima esecuzione e codice di risultato)
+
+Passo 3 - Provare subito (senza aspettare le 09:00)
+      Start-ScheduledTask -TaskName Monitor100Siti-0900
+  Poi controlla il log (logs\AAAA-MM-GG.log) e il report in reports\.
+  Il trigger della run sara' "scheduled".
+
+Quali siti scansiona l'attivita'?
+  Tutti i siti con "enabled" diverso da false in sites.json (non solo i
+  pilota). Durante il collaudo imposta "enabled": false sui siti che non
+  vuoi, oppure modifica l'argomento dell'attivita' aggiungendo --pilot:
+  apri scripts\register-tasks.ps1 e cambia
+      -Argument "--scheduled"   in   -Argument "--scheduled --pilot"
+      -Argument "--if-missed"   in   -Argument "--if-missed --pilot"
+  poi riesegui il Passo 1 (-Force sovrascrive le attivita' esistenti).
+
+Modificare l'orario
+  In scripts\register-tasks.ps1 cambia  -At 9:00AM  e riesegui il Passo 1.
+
+Disattivare o rimuovere
+      Disable-ScheduledTask -TaskName Monitor100Siti-0900
+      Enable-ScheduledTask  -TaskName Monitor100Siti-0900
+      Unregister-ScheduledTask -TaskName Monitor100Siti-0900 -Confirm:$false
+      Unregister-ScheduledTask -TaskName Monitor100Siti-Recupero -Confirm:$false
+
+Alternativa grafica (senza script)
+  1. Premi Win+R, scrivi taskschd.msc, Invio.
+  2. Azione > Crea attivita' di base.
+  3. Trigger: Ogni giorno, ore 09:00.
+  4. Azione: Avvia programma
+       Programma:   C:\percorso\progetto\scripts\run-scan.cmd
+       Argomenti:   --scheduled
+       Inizia in:   C:\percorso\progetto
+  5. Dopo la creazione: Proprieta' > Impostazioni > spunta "Esegui non
+     appena possibile dopo l'avvio mancato di un'attivita' pianificata" e
+     "Non avviare una nuova istanza" per "Se l'attivita' e' gia' in
+     esecuzione".
+
+Se non parte:
+  - Get-ScheduledTaskInfo: LastTaskResult diverso da 0 indica un errore;
+    controlla logs\AAAA-MM-GG.log.
+  - PC spento alle 09:00: la run parte appena possibile all'accensione o
+    all'accesso. Se non e' mai stata eseguita, nel database non risulta
+    una run completata e il report non la mostra come superata.
+  - Server non raggiungibile (VPN spenta): i controlli risultano "falliti
+    per connessione", non "superati".
+  - Task Scheduler non trova npm: verifica che npm sia nel PATH
+    dell'utente che ha creato l'attivita'.
+==========================================================================

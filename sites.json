@@ -30,7 +30,8 @@
   "run": {
     "concurrency": 1,
     "maxRunMinutes": 120,
-    "retentionDays": 30
+    "retentionDays": 30,
+    "keepRuns": 3
   },
   "sites": [
     {
@@ -47,6 +48,18 @@
         {
           "name": "how-it-works",
           "path": "how-it-works/"
+        },
+        {
+          "name": "about-us",
+          "path": "about-us/"
+        },
+        {
+          "name": "FAQ",
+          "path": "faq/"
+        },
+        {
+          "name": "contact",
+          "path": "contact/"
         }
       ]
     }

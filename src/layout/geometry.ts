@@ -38,7 +38,7 @@ export async function collectAuto(page: Page, max = 150): Promise<Snapshot> {
     const css = (el: Element): string => {
       const parts: string[] = []; let n: Element | null = el; let anchored = false;
       while (n && n !== document.body) {
-        if (n.id && /^[A-Za-z][\w-]*$/.test(n.id)) { parts.unshift('#' + n.id); anchored = true; break; }
+        if (n.id && /^[A-Za-z][\w-]*$/.test(n.id) && !/(?=[0-9a-f]*\d)[0-9a-f]{8,}/i.test(n.id)) { parts.unshift('#' + n.id); anchored = true; break; }
         const p: Element | null = n.parentElement; const cur: Element = n;
         const idx = p ? Array.from(p.children).filter((c) => c.tagName === cur.tagName).indexOf(cur) + 1 : 1;
         parts.unshift(`${cur.tagName.toLowerCase()}:nth-of-type(${idx})`); n = p;

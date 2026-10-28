@@ -14,7 +14,7 @@ export interface Defaults {
   geometryTolerancePx: number; globalMaskSelectors: string[];
   elements?: ElementCfg[]; autoElements?: boolean; autoMaxElements?: number;
 }
-export interface Config { defaults: Defaults; run: { concurrency: number; maxRunMinutes: number; retentionDays: number }; sites: SiteCfg[] }
+export interface Config { defaults: Defaults; run: { concurrency: number; maxRunMinutes: number; retentionDays: number; keepRuns?: number  }; sites: SiteCfg[] }
 
 export function loadConfig(): Config {
   if (!fs.existsSync(P.sites)) throw new Error(`File mancante: ${P.sites}`);
