@@ -1,0 +1,33 @@
+{
+  "name": "monitor-100-siti",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "install:browser": "playwright install chromium",
+    "check": "tsx src/cli.ts check-install",
+    "typecheck": "tsc --noEmit",
+    "scan": "tsx src/cli.ts scan",
+    "scan:pilot": "tsx src/cli.ts scan --pilot",
+    "baseline": "tsx src/cli.ts baseline",
+    "exceptions": "tsx src/cli.ts exceptions",
+    "report": "tsx src/cli.ts report",
+    "sites": "tsx src/cli.ts list-sites",
+    "test:unit": "tsx --test tests/unit.test.ts"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.0.0",
+    "dotenv": "^16.4.5",
+    "pixelmatch": "^6.0.0",
+    "playwright": "^1.49.0",
+    "pngjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^22.0.0",
+    "@types/pngjs": "^6.0.5",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

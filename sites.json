@@ -1,0 +1,128 @@
+{
+  "defaults": {
+    "viewports": [
+      {
+        "name": "desktop",
+        "width": 1366,
+        "height": 900
+      },
+      {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      }
+    ],
+    "navTimeoutMs": 30000,
+    "retries": 1,
+    "visual": {
+      "pixelmatchThreshold": 0.1,
+      "maxDiffRatio": 0.01,
+      "criticalDiffRatio": 0.08
+    },
+    "geometryTolerancePx": 4,
+    "globalMaskSelectors": [
+      ".cookie-banner",
+      "#cookie-notice"
+    ],
+    "autoElements": true,
+    "autoMaxElements": 150
+  },
+  "run": {
+    "concurrency": 1,
+    "maxRunMinutes": 120,
+    "retentionDays": 30
+  },
+  "sites": [
+    {
+      "id": "stage-alex",
+      "name": "Stage Alex (server interno)",
+      "enabled": true,
+      "pilot": true,
+      "baseUrl": "http://192.168.0.252/test/stage_alex/",
+      "pages": [
+        {
+          "name": "home",
+          "path": ""
+        },
+        {
+          "name": "how-it-works",
+          "path": "how-it-works/"
+        }
+      ]
+    },
+    {
+      "id": "esempio-uno",
+      "name": "Sito fittizio 1",
+      "enabled": false,
+      "pilot": true,
+      "baseUrl": "https://esempio-uno.example",
+      "pages": [
+        {
+          "name": "home",
+          "path": "/",
+          "elements": [
+            {
+              "name": "header",
+              "selector": "header"
+            },
+            {
+              "name": "menu",
+              "selector": "nav"
+            },
+            {
+              "name": "titolo",
+              "selector": "h1"
+            },
+            {
+              "name": "footer",
+              "selector": "footer"
+            }
+          ],
+          "maskSelectors": [
+            ".banner-promo"
+          ]
+        },
+        {
+          "name": "contatti",
+          "path": "/contatti/",
+          "elements": [
+            {
+              "name": "titolo",
+              "selector": "h1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esempio-due",
+      "name": "Sito fittizio 2",
+      "enabled": false,
+      "pilot": true,
+      "baseUrl": "https://esempio-due.example",
+      "pages": [
+        {
+          "name": "home",
+          "path": "/",
+          "viewports": [
+            {
+              "name": "desktop",
+              "width": 1440,
+              "height": 900
+            }
+          ],
+          "elements": [
+            {
+              "name": "header",
+              "selector": "header"
+            },
+            {
+              "name": "footer",
+              "selector": "footer"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
